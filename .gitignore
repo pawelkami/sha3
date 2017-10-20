@@ -30,3 +30,13 @@
 *.exe
 *.out
 *.app
+
+packages/*
+.vs/*
+x64/*
+*/Debug/*
+*/Release/*
+*/x64/*
+*.vcxproj.user
+*/.vs/*
+*.ipch
