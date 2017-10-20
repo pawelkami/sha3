@@ -29,5 +29,8 @@ void HashCtx::setHashAlgo(HashType hashType)
 
 std::string HashCtx::computeHash(std::vector<char> data)
 {
-	return strategy->compute(data);
+	if (strategy)
+		return strategy->compute(data);
+	else
+		throw std::runtime_error("Hash algorithm wasn't chosen");
 }
