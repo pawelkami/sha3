@@ -63,10 +63,8 @@ int main(int argc, char** argv)
 		else
 			throw error("No algo chosen");
 
-
-		std::vector<char> data = readFile(filepath);
-
-		std::cout << hashCtx.computeHash(data) << std::endl;
+		// TODO check filepath
+		std::cout << hashCtx.computeHash(filepath) << std::endl;
 	}
 	catch (const error &ex)
 	{
