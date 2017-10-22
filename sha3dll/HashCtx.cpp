@@ -27,8 +27,10 @@ void HashCtx::setHashAlgo(HashType hashType)
 	}
 }
 
-std::string HashCtx::computeHash(std::vector<char> data)
+std::string HashCtx::computeHash(const std::string& filepath)
 {
+	// TODO read file into vec
+	std::vector<char> data;
 	if (strategy)
 		return strategy->compute(data);
 	else

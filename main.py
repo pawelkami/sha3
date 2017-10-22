@@ -1,6 +1,7 @@
-import tkinter as tk
-from tkinter import filedialog
+import Tkinter as tk
+import tkFileDialog
 from functools import partial
+import sha3dll
 
 '''
 Class liable to draw window with possibility to specify file to hash
@@ -14,19 +15,12 @@ class UI(tk.Frame):
         tk.Frame.__init__(self, parent)
         self.initWindow(parent)
 
-        self.algorithms = {
-            1 : partial(UI.sha224),
-            2 : partial(UI.sha256),
-            3 : partial(UI.sha384),
-            4 : partial(UI.sha512),
-        }
-
     '''
     Method liable to draw all buttons and textboxes
     '''
     def initWindow(self, parent):
         self.sha_opt = tk.IntVar()
-        self.sha_opt.set(1)
+        self.sha_opt.set(sha3dll.HashType.SHA3_224)
         self.exported = tk.IntVar()
 
         self.file = tk.StringVar()
@@ -41,10 +35,10 @@ class UI(tk.Frame):
         self.exploreBtn = tk.Button(self, text="Explore", command=self.pickFile)
         self.computeBtn = tk.Button(self, text="Compute", command=self.compute)
 
-        self.sha224Btn = tk.Radiobutton(self, text="224 bit", variable=self.sha_opt, value=1)
-        self.sha256Btn = tk.Radiobutton(self, text="256 bit", variable=self.sha_opt, value=2)
-        self.sha384Btn = tk.Radiobutton(self, text="384 bit", variable=self.sha_opt, value=3)
-        self.sha512Btn = tk.Radiobutton(self, text="512 bit", variable=self.sha_opt, value=4)
+        self.sha224Btn = tk.Radiobutton(self, text="224 bit", variable=self.sha_opt, value=sha3dll.HashType.SHA3_224)
+        self.sha256Btn = tk.Radiobutton(self, text="256 bit", variable=self.sha_opt, value=sha3dll.HashType.SHA3_256)
+        self.sha384Btn = tk.Radiobutton(self, text="384 bit", variable=self.sha_opt, value=sha3dll.HashType.SHA3_384)
+        self.sha512Btn = tk.Radiobutton(self, text="512 bit", variable=self.sha_opt, value=sha3dll.HashType.SHA3_512)
 
         # lay the widgets out on the screen.
         tk.Label(self, text="").grid(row=0, column=0, columnspan=6)
@@ -70,7 +64,7 @@ class UI(tk.Frame):
     Method draws window where user could pick file
     '''
     def pickFile(self):
-        filename = filedialog.askopenfilename()
+        filename = tkFileDialog.askopenfilename()
         self.file.set(filename)
 
 
@@ -116,25 +110,12 @@ class UI(tk.Frame):
     def compute(self):
         # print(self.file.get())
         # print(self.sha_opt.get())
-        sha = self.algorithms[self.sha_opt.get()]
-        hash = sha(self.file.get())
+        hashType = sha3dll.HashType(self.sha_opt.get())
+		
+        hashCtx = sha3dll.HashCtx()
+        hashCtx.setHashAlgo(hashType)		
+        hash = hashCtx.computeHash("") # todo filename
         self.printResult(hash)
-
-    @staticmethod
-    def sha224(file):
-        return 224
-
-    @staticmethod
-    def sha256(file):
-        return 256
-
-    @staticmethod
-    def sha384(file):
-        return 384
-
-    @staticmethod
-    def sha512(file):
-        return 512
 
 if __name__ == "__main__":
     root = tk.Tk()

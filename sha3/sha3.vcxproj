@@ -153,7 +153,6 @@
   <ItemGroup>
     <ClCompile Include="..\sha3dll\HashCtx.cpp" />
     <ClCompile Include="..\sha3dll\HashStrategy.cpp" />
-    <ClCompile Include="..\sha3dll\sha3dll.cpp" />
     <ClCompile Include="..\sha3dll\sha3_224.cpp" />
     <ClCompile Include="..\sha3dll\sha3_256.cpp" />
     <ClCompile Include="..\sha3dll\sha3_384.cpp" />

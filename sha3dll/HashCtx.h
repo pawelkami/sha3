@@ -23,7 +23,7 @@ public:
 	~HashCtx();
 
 	void setHashAlgo(HashType hashType);
-	std::string computeHash(std::vector<char> data);
+	std::string computeHash(const std::string& filepath);
 	
 };
 
