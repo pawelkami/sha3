@@ -22,6 +22,8 @@ public:
 	HashCtx();
 	~HashCtx();
 
+	void clean();
+
 	void setHashAlgo(HashType hashType);
 	std::string computeHash(const std::string& filepath);
 	

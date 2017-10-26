@@ -13,6 +13,11 @@ HashCtx::~HashCtx()
 {
 }
 
+void HashCtx::clean()
+{
+	strategy.reset();
+}
+
 void HashCtx::setHashAlgo(HashType hashType)
 {
 	switch (hashType)

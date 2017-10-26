@@ -20,6 +20,8 @@ BOOST_PYTHON_MODULE(sha3dll)
 
 	class_<HashCtx, boost::noncopyable>("HashCtx")
 		.def("setHashAlgo", &HashCtx::setHashAlgo, args("hashAlgo"))
-		.def("computeHash", &HashCtx::computeHash, args("filepath"));
+		.def("computeHash", &HashCtx::computeHash, args("filepath"))
+		.def("clean", &HashCtx::clean)
+		;
 	
 }
