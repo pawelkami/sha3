@@ -181,20 +181,14 @@
   <ItemGroup>
     <ClCompile Include="HashCtx.cpp" />
     <ClCompile Include="HashStrategy.cpp" />
+    <ClCompile Include="sha3.cpp" />
     <ClCompile Include="sha3dll.cpp" />
-    <ClCompile Include="sha3_224.cpp" />
-    <ClCompile Include="sha3_256.cpp" />
-    <ClCompile Include="sha3_384.cpp" />
-    <ClCompile Include="sha3_512.cpp" />
     <ClCompile Include="utils.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="HashCtx.h" />
     <ClInclude Include="HashStrategy.h" />
-    <ClInclude Include="sha3_224.h" />
-    <ClInclude Include="sha3_256.h" />
-    <ClInclude Include="sha3_384.h" />
-    <ClInclude Include="sha3_512.h" />
+    <ClInclude Include="sha3.h" />
     <ClInclude Include="utils.h" />
   </ItemGroup>
   <ItemGroup>

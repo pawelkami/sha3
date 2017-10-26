@@ -1,9 +1,6 @@
 #include "HashCtx.h"
-#include "sha3_224.h"
-#include "sha3_256.h"
-#include "sha3_384.h"
-#include "sha3_512.h"
 #include "utils.h"
+#include "sha3.h"
 
 
 
@@ -20,10 +17,10 @@ void HashCtx::setHashAlgo(HashType hashType)
 {
 	switch (hashType)
 	{
-		case HashCtx::SHA3_224: strategy = std::make_unique<sha3_224>(); break;
-		case HashCtx::SHA3_256: strategy = std::make_unique<sha3_256>(); break;
-		case HashCtx::SHA3_384: strategy = std::make_unique<sha3_384>(); break;
-		case HashCtx::SHA3_512: strategy = std::make_unique<sha3_512>(); break;
+		case HashCtx::SHA3_224: strategy = std::make_unique<sha3>(224); break;
+		case HashCtx::SHA3_256: strategy = std::make_unique<sha3>(256); break;
+		case HashCtx::SHA3_384: strategy = std::make_unique<sha3>(384); break;
+		case HashCtx::SHA3_512: strategy = std::make_unique<sha3>(512); break;
 		default: break;
 	}
 }
