@@ -157,6 +157,7 @@
     <ClCompile Include="..\sha3dll\sha3_256.cpp" />
     <ClCompile Include="..\sha3dll\sha3_384.cpp" />
     <ClCompile Include="..\sha3dll\sha3_512.cpp" />
+    <ClCompile Include="..\sha3dll\utils.cpp" />
     <ClCompile Include="main.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -166,6 +167,7 @@
     <ClInclude Include="..\sha3dll\sha3_256.h" />
     <ClInclude Include="..\sha3dll\sha3_384.h" />
     <ClInclude Include="..\sha3dll\sha3_512.h" />
+    <ClInclude Include="..\sha3dll\utils.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
