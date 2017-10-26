@@ -3,6 +3,7 @@
 #include "sha3_256.h"
 #include "sha3_384.h"
 #include "sha3_512.h"
+#include "utils.h"
 
 
 
@@ -29,8 +30,7 @@ void HashCtx::setHashAlgo(HashType hashType)
 
 std::string HashCtx::computeHash(const std::string& filepath)
 {
-	// TODO read file into vec
-	std::vector<char> data;
+	std::vector<char> data = readFile(filepath);
 	if (strategy)
 		return strategy->compute(data);
 	else

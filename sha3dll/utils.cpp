@@ -3,6 +3,7 @@
 #include "utils.h"
 #include <algorithm>
 #include <map>
+#include <fstream>
 
 std::string bin2hex(const std::vector<char>& bin)
 {
@@ -24,7 +25,7 @@ std::vector<char> hex2bin(std::string hex)
 	std::vector<char> binVec;
 
 	if(!checkIfHexString(hex))
-		return binVec;
+		throw std::runtime_error("Given argument was not hex string");
 
 	std::map<char, char> hex2binMap =
 	{
@@ -71,4 +72,21 @@ bool checkIfHexString(const std::string & hex)
 			return (c >= 'a' && c <= 'f' || c >= '0' && c <= '9' || c >= 'A' && c <= 'F');
 		}
 	);
+}
+
+
+std::vector<char> readFile(const std::string& filepath)
+{
+	std::ifstream stream(filepath, std::ios::binary);
+	if (!stream)
+		throw std::runtime_error("Problem reading file " + filepath);
+
+	std::vector<char> fileContents((std::istreambuf_iterator<char>(stream)), std::istreambuf_iterator<char>());
+	return fileContents;
+}
+
+bool doFileExist(const std::string & filepath)
+{
+	std::ifstream f(filepath);
+	return f.good();
 }

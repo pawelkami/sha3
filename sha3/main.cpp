@@ -5,19 +5,9 @@
 #include <iostream>
 #include <fstream>
 #include <boost/program_options.hpp>
+#include "utils.h"
 
 using namespace boost::program_options;
-
-
-std::vector<char> readFile(const std::string& filepath)
-{
-	std::ifstream stream(filepath, std::ios::binary);
-	if (!stream)
-		throw std::runtime_error("Problem reading file " + filepath);
-
-	std::vector<char> fileContents((std::istreambuf_iterator<char>(stream)), std::istreambuf_iterator<char>());
-	return fileContents;
-}
 
 int main(int argc, char** argv)
 {
@@ -26,10 +16,10 @@ int main(int argc, char** argv)
 		options_description desc{ "Compute SHA3 hash of file" };
 		desc.add_options()
 			("help,h", "Help screen")
-			("224", value<std::string>(), "Program computes SHA3-224 of file")
-			("256", value<std::string>(), "Program computes SHA3-256 of file")
-			("384", value<std::string>(), "Program computes SHA3-384 of file")
-			("512", value<std::string>(), "Program computes SHA3-512 of file");
+			("224", value<std::string>()->value_name("file"), "Program computes SHA3-224 of file")
+			("256", value<std::string>()->value_name("file"), "Program computes SHA3-256 of file")
+			("384", value<std::string>()->value_name("file"), "Program computes SHA3-384 of file")
+			("512", value<std::string>()->value_name("file"), "Program computes SHA3-512 of file");
 
 		variables_map vm;
 		store(parse_command_line(argc, argv, desc), vm);
@@ -63,7 +53,9 @@ int main(int argc, char** argv)
 		else
 			throw error("No algo chosen");
 
-		// TODO check filepath
+		if (!doFileExist(filepath))
+			throw std::runtime_error("File path is invalid");
+
 		std::cout << hashCtx.computeHash(filepath) << std::endl;
 	}
 	catch (const error &ex)
