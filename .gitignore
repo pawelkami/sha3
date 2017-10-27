@@ -42,3 +42,8 @@ x64/*
 *.ipch
 
 *.pyd
+
+benchmark/files/*
+*.png
+
+.idea/*
