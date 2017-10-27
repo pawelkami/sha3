@@ -114,7 +114,7 @@ class UI(tk.Frame):
 		
         hashCtx = sha3dll.HashCtx()
         hashCtx.setHashAlgo(hashType)		
-        hash = hashCtx.computeHash("") # todo filename
+        hash = hashCtx.computeHash(str(self.file.get())) # todo filename
         self.printResult(hash)
 
 if __name__ == "__main__":
