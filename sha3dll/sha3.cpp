@@ -176,52 +176,74 @@ void sha3::rnd(unsigned int round)
 	keccakJota(round);
 }
 
-std::vector<sha3::bit> sha3::sponge(std::vector<bit>& m)
+std::vector<sha3::bit> sha3::sponge(std::vector<bit>& m, bool isFinal)
 {
-	std::vector<bit> p(m.begin(), m.end());
-	pad10_1(r, m.size(), p);
-	unsigned n = p.size() / r;
+	//std::vector<bit> p(m.begin(), m.end());
+	//pad10_1(r, m.size(), p);
+	//unsigned n = p.size() / r;
 
-	std::vector<std::vector<bit>> pn;
-	for (int i = 0; i < n; ++i)
-		pn.push_back(std::vector<bit>(p.begin() + (i * r), p.begin() + ((i+1) * r)));
+	//std::vector<std::vector<bit>> pn;
+	//for (int i = 0; i < n; ++i)
+	//	pn.push_back(std::vector<bit>(p.begin() + (i * r), p.begin() + ((i+1) * r)));
 
-	std::vector<bit> S(B, bit::ZERO);
+	//std::vector<bit> S(B, bit::ZERO);
 
-	for (int i = 0; i < n; ++i)
+	//for (int i = 0; i < n; ++i)
+	//{
+	//	for (int j = 0; j < c; ++j)
+	//		pn[i].push_back(bit::ZERO);
+
+	//	S = keccakPermutation(xor(S, pn[i]));
+	//}
+
+	//std::vector<bit> Z(S.begin(), S.begin() + r);
+
+	//while (Z.size() < d) 
+	//{
+	//	S = keccakPermutation(S);
+	//	for (int i = 0; i < r; ++i)
+	//		Z.push_back(S[i]);
+	//}
+
+	if (isFinal)
 	{
-		for (int j = 0; j < c; ++j)
-			pn[i].push_back(bit::ZERO);
-
-		S = keccakPermutation(xor(S, pn[i]));
+		pad10_1(r, m.size(), m);
 	}
 
-	std::vector<bit> Z(S.begin(), S.begin() + r);
+	for (int j = 0; j < c; ++j)
+		m.push_back(bit::ZERO);
+	S = keccakPermutation(xor (S, m));
 
-	while (Z.size() < d) 
+	if (isFinal)
 	{
-		S = keccakPermutation(S);
-		for (int i = 0; i < r; ++i)
-			Z.push_back(S[i]);
+		std::vector<bit> Z(S.begin(), S.begin() + r);
+		while (Z.size() < d)
+		{
+			S = keccakPermutation(S);
+			for (int i = 0; i < r; ++i)
+				Z.push_back(S[i]);
+		}
+		return std::move(std::vector<bit>(Z.begin(), Z.begin() + d));
 	}
-
-	return std::move(std::vector<bit>(Z.begin(), Z.begin() + d));
+	else
+		return std::move(std::vector<bit>());
 }
 
-std::vector<unsigned char> sha3::keccak(std::vector<bit>& m)
+std::vector<unsigned char> sha3::keccak(std::vector<bit>& m, bool isFinal)
 {
-	return convertBitsToString(sponge(m));
+	return convertBitsToString(sponge(m, isFinal));
 }
 
 sha3::sha3()
 {
 }
 
-sha3::sha3(int size)
+sha3::sha3(int size) : S(B, bit::ZERO)
 {
 	d = size;
 	c = 2 * size; 
 	r = W_MAX * Y_MAX * X_MAX - c; // r = b - c
+	rate = r >> 3; // r in bytes
 }
 
 
@@ -229,7 +251,7 @@ sha3::~sha3()
 {
 }
 
-std::string sha3::compute(const std::vector<unsigned char>& data)
+void sha3::keccak_update(const std::vector<unsigned char>& data)
 {
 	//std::vector<unsigned char> ldata(data.begin(), data.begin() + 1600);
 	//for (unsigned char it : ldata)
@@ -240,7 +262,7 @@ std::string sha3::compute(const std::vector<unsigned char>& data)
 	//convertStringToStateArray(ldata);
 	//for (unsigned char it : convertStateArrayToString())
 	//	std::cout << it;
-	
+
 	//std::vector<unsigned char> ldata(data.begin(), data.begin() + 200);
 	//for (unsigned char it : ldata)
 	//	std::cout << it;
@@ -256,10 +278,17 @@ std::string sha3::compute(const std::vector<unsigned char>& data)
 	//	std::cout << it;
 
 	std::vector<bit> m = convertStringToBits(data);
+	keccak(m, false);
+}
+
+std::string sha3::keccak_final(const std::vector<unsigned char>& data)
+{
+	std::vector<bit> m = convertStringToBits(data);
 	m.push_back(bit::ZERO);
 	m.push_back(bit::ONE);
-	
-	//return bin2hex(keccak(m));
+
+	//return bin2hex(keccak(m, true));
 
 	return "abcd";
 }
+

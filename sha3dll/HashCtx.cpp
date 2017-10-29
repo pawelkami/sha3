@@ -31,9 +31,17 @@ void HashCtx::setHashAlgo(HashType hashType)
 
 std::string HashCtx::computeHash(const std::string& filepath)
 {
-	std::vector<unsigned char> data = readFile(filepath);
 	if (strategy)
-		return strategy->compute(data);
+	{
+		int i = 0;
+		std::vector<unsigned char> data = readFile(filepath, i * strategy->rate, strategy->rate);
+		while (data.size() == strategy->rate) // rate bits ; rate = 1600 - 2 * output_size
+		{
+			strategy->keccak_update(data);
+			data = readFile(filepath, (++i) * strategy->rate, strategy->rate);
+		}
+		return strategy->keccak_final(data);
+	}
 	else
 		throw std::runtime_error("Hash algorithm wasn't chosen");
 }

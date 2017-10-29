@@ -7,10 +7,13 @@
 class HashStrategy
 {
 public:
+	unsigned rate;
+
 	HashStrategy();
 	virtual ~HashStrategy();
 
-	virtual std::string compute(const std::vector<unsigned char>& data) = 0;
+	virtual void keccak_update(const std::vector<unsigned char>& data) = 0;
+	virtual std::string keccak_final(const std::vector<unsigned char>& data) = 0;
 };
 
 #endif

@@ -31,6 +31,7 @@ private:
 	//typedef std::array<std::array<std::array<unsigned char, Z_MAX>, Y_MAX>, X_MAX> state_array;
 	typedef std::array<std::array<std::array<bit, W_MAX>, Y_MAX>, X_MAX> state_array;
 
+	std::vector<bit> S;
 	state_array A;
 	unsigned c;
 	unsigned r;
@@ -54,14 +55,15 @@ private:
 
 	void rnd(unsigned int round);
 
-	std::vector<bit> sponge(std::vector<bit>& m);
-	std::vector<unsigned char> keccak(std::vector<bit>& m);
+	std::vector<bit> sponge(std::vector<bit>& m, bool isFinal);
+	std::vector<unsigned char> keccak(std::vector<bit>& m, bool isFinal);
 
 public:
 	sha3();
 	sha3(int size);
 	~sha3();
-	std::string compute(const std::vector<unsigned char>& data);
+	void keccak_update(const std::vector<unsigned char>& data);
+	std::string keccak_final(const std::vector<unsigned char>& data);
 };
 
 #endif

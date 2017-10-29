@@ -75,7 +75,7 @@ bool checkIfHexString(const std::string & hex)
 }
 
 
-std::vector<unsigned char> readFile(const std::string& filepath)
+std::vector<unsigned char> readFile(const std::string& filepath, unsigned from, unsigned bytesToRead)
 {
 	std::ifstream stream(filepath, std::ios::binary);
 	if (!stream)
