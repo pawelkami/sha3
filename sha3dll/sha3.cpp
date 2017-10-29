@@ -23,7 +23,7 @@ std::vector<sha3::bit> sha3::convertStringToBits(const std::vector<unsigned char
 
 	for (unsigned char c : str)
 	{
-		bits.push_back(bit(((int)c & 0x80) == 0 ? 0 : 1));
+		bits.push_back(bit((c & 0x80) == 0 ? 0 : 1));
 		bits.push_back(bit(((int)c & 0x40) == 0 ? 0 : 1));
 		bits.push_back(bit(((int)c & 0x20) == 0 ? 0 : 1));
 		bits.push_back(bit(((int)c & 0x10) == 0 ? 0 : 1));
@@ -163,7 +163,7 @@ void sha3::keccakChi()
 
 void sha3::keccakJota(unsigned int round)
 {
-	unsigned r = keccak_round_constants[round];
+	uint64_t r = keccak_round_constants[round];
 	// TODO
 }
 
@@ -183,14 +183,14 @@ std::vector<sha3::bit> sha3::sponge(std::vector<bit>& m)
 	unsigned n = p.size() / r;
 
 	std::vector<std::vector<bit>> pn;
-	for (int i = 0; i < n; ++i)
+	for (unsigned int i = 0; i < n; ++i)
 		pn.push_back(std::vector<bit>(p.begin() + (i * r), p.begin() + ((i+1) * r)));
 
 	std::vector<bit> S(B, bit::ZERO);
 
-	for (int i = 0; i < n; ++i)
+	for (unsigned int i = 0; i < n; ++i)
 	{
-		for (int j = 0; j < c; ++j)
+		for (unsigned int j = 0; j < c; ++j)
 			pn[i].push_back(bit::ZERO);
 
 		S = keccakPermutation(xor(S, pn[i]));
@@ -201,7 +201,7 @@ std::vector<sha3::bit> sha3::sponge(std::vector<bit>& m)
 	while (Z.size() < d) 
 	{
 		S = keccakPermutation(S);
-		for (int i = 0; i < r; ++i)
+		for (unsigned int i = 0; i < r; ++i)
 			Z.push_back(S[i]);
 	}
 
