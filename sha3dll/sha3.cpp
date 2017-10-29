@@ -33,9 +33,6 @@ std::vector<sha3::bit> sha3::convertStringToBits(const std::vector<unsigned char
 		bits.push_back(bit(((int)c & 0x01) == 0 ? 0 : 1));
 	}
 
-	for (bit b : bits)
-		std::cout << b;
-
 	return std::move(bits);
 }
 
@@ -250,17 +247,10 @@ std::string sha3::compute(const std::vector<unsigned char>& data)
 	//std::cout << std::endl << std::string(40, '=') << std::endl;
 	//
 	//std::vector<bit> m = convertStringToBits(ldata);
-	//
-	//std::cout << std::endl << std::string(40, '=') << std::endl;
-	//for (auto b : m)
-	//	std::cout << b;
-	//std::cout << std::endl << std::string(40, '=') << std::endl;
 
 	//convertStringToStateArray(m);
 	//m = convertStateArrayToString();
 	//std::vector<unsigned char> out = convertBitsToString(m);
-
-	//std::cout << std::endl << std::string(40, '=') << std::endl;
 
 	//for (unsigned char it : out)
 	//	std::cout << it;
