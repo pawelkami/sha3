@@ -23,14 +23,14 @@ std::vector<sha3::bit> sha3::convertStringToBits(const std::vector<unsigned char
 
 	for (unsigned char c : str)
 	{
-		bits.push_back(bit(((int)c & 0x80) == 0 ? 0 : 1));
-		bits.push_back(bit(((int)c & 0x40) == 0 ? 0 : 1));
-		bits.push_back(bit(((int)c & 0x20) == 0 ? 0 : 1));
-		bits.push_back(bit(((int)c & 0x10) == 0 ? 0 : 1));
-		bits.push_back(bit(((int)c & 0x08) == 0 ? 0 : 1));
-		bits.push_back(bit(((int)c & 0x04) == 0 ? 0 : 1));
-		bits.push_back(bit(((int)c & 0x02) == 0 ? 0 : 1));
-		bits.push_back(bit(((int)c & 0x01) == 0 ? 0 : 1));
+		bits.push_back(bit((c & 0x80) == 0 ? 0 : 1));
+		bits.push_back(bit((c & 0x40) == 0 ? 0 : 1));
+		bits.push_back(bit((c & 0x20) == 0 ? 0 : 1));
+		bits.push_back(bit((c & 0x10) == 0 ? 0 : 1));
+		bits.push_back(bit((c & 0x08) == 0 ? 0 : 1));
+		bits.push_back(bit((c & 0x04) == 0 ? 0 : 1));
+		bits.push_back(bit((c & 0x02) == 0 ? 0 : 1));
+		bits.push_back(bit((c & 0x01) == 0 ? 0 : 1));
 	}
 
 	return std::move(bits);
@@ -163,7 +163,7 @@ void sha3::keccakChi()
 
 void sha3::keccakJota(unsigned int round)
 {
-	unsigned r = keccak_round_constants[round];
+	uint64_t r = keccak_round_constants[round];
 	// TODO
 }
 

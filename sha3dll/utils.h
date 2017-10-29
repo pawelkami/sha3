@@ -4,6 +4,7 @@
 #include <string>
 #include <vector>
 
+#define HEX2DIGIT(c) ((c) <= '9' ? (c) & 0xF : ((c) - 'a' + 10) & 0xF)
 
 std::string bin2hex(const std::vector<unsigned char>& bin);
 

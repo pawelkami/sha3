@@ -18,7 +18,7 @@ sha3_cryptopp::~sha3_cryptopp()
 {
 }
 
-std::string sha3_cryptopp::compute(const std::vector<char>& data)
+std::string sha3_cryptopp::compute(const std::vector<unsigned char>& data)
 {
 	std::unique_ptr<byte> digest(new byte[hash.DigestSize()]);
 	hash.CalculateDigest(digest.get(), (const unsigned char*)data.data(), data.size());
