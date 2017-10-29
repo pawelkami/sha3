@@ -6,23 +6,46 @@
 #include <memory>
 #include <array>
 #include <iostream>
+#include <map>
+#include "utils.h"
 
 class sha3 :
 	public HashStrategy
 {
 private:
+
+	enum bit : uint8_t {
+		ZERO = 0x00,
+		ONE = 0x01
+	};
+
 	static const unsigned int NUMBER_OF_ROUNDS = 24;
-	static const int X_MAX = 5;
-	static const int Y_MAX = 5;
-	static const int W_MAX = 64;
+	static const unsigned int X_MAX = 5;
+	static const unsigned int Y_MAX = 5;
+	static const unsigned int W_MAX = 64;
+	static constexpr unsigned int B = X_MAX * Y_MAX * W_MAX;
+	static constexpr unsigned int BITS_IN_CHAR = sizeof(char) * 8;
+	static constexpr unsigned int Z_MAX = W_MAX / BITS_IN_CHAR;
+	static const uint64_t keccak_round_constants[NUMBER_OF_ROUNDS];
 
-	//std::vector<std::vector<std::vector<uint8_t>>> A;
-	std::array<std::array<std::array<uint8_t, W_MAX>, Y_MAX>, X_MAX> A;
+	//typedef std::array<std::array<std::array<unsigned char, Z_MAX>, Y_MAX>, X_MAX> state_array;
+	typedef std::array<std::array<std::array<bit, W_MAX>, Y_MAX>, X_MAX> state_array;
 
-	void convertStringToStateArray(const std::vector<char>& str);
-	std::vector<char> convertStateArrayToString();
+	state_array A;
+	unsigned c;
+	unsigned r;
+	unsigned d;
 
-	void keccakPermutation();
+	inline std::vector<bit> xor(const std::vector<bit>& f, const std::vector<bit>& s);
+
+	std::vector<bit> convertStringToBits(const std::vector<unsigned char>& str);
+	std::vector<unsigned char> convertBitsToString(const std::vector<bit>& bits);
+	void convertStringToStateArray(const std::vector<bit>& str);
+	std::vector<bit> convertStateArrayToString();
+
+	void pad10_1(unsigned x, unsigned m, std::vector<bit>& p);
+
+	std::vector<sha3::bit> keccakPermutation(std::vector<bit>& m);
 	void keccakTheta();
 	void keccakRho();
 	void keccakPi();
@@ -31,11 +54,14 @@ private:
 
 	void rnd(unsigned int round);
 
+	std::vector<bit> sponge(std::vector<bit>& m);
+	std::vector<unsigned char> keccak(std::vector<bit>& m);
+
 public:
 	sha3();
 	sha3(int size);
 	~sha3();
-	std::string compute(const std::vector<char>& data);
+	std::string compute(const std::vector<unsigned char>& data);
 };
 
 #endif

@@ -10,7 +10,7 @@ public:
 	HashStrategy();
 	virtual ~HashStrategy();
 
-	virtual std::string compute(const std::vector<char>& data) = 0;
+	virtual std::string compute(const std::vector<unsigned char>& data) = 0;
 };
 
 #endif

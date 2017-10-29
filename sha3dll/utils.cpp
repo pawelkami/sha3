@@ -5,7 +5,7 @@
 #include <map>
 #include <fstream>
 
-std::string bin2hex(const std::vector<char>& bin)
+std::string bin2hex(const std::vector<unsigned char>& bin)
 {
 	std::string converted;
 	std::string hexCodes = "0123456789ABCDEF";
@@ -20,14 +20,14 @@ std::string bin2hex(const std::vector<char>& bin)
 	return converted;
 }
 
-std::vector<char> hex2bin(std::string hex)
+std::vector<unsigned char> hex2bin(std::string hex)
 {
-	std::vector<char> binVec;
+	std::vector<unsigned char> binVec;
 
 	if(!checkIfHexString(hex))
 		throw std::runtime_error("Given argument was not hex string");
 
-	std::map<char, char> hex2binMap =
+	std::map<unsigned char, unsigned char> hex2binMap =
 	{
 		std::make_pair('0', 0x00),
 		std::make_pair('1', 0x01),
@@ -55,7 +55,7 @@ std::vector<char> hex2bin(std::string hex)
 
 	for (int i = 0; i < hex.size(); i += 2)
 	{
-		char c = 0;
+		unsigned char c = 0;
 		c |= hex2binMap[hex[i]] << 4;
 		c |= hex2binMap[hex[i + 1] & 0x0f];
 		binVec.push_back(c);
@@ -67,7 +67,7 @@ std::vector<char> hex2bin(std::string hex)
 bool checkIfHexString(const std::string & hex)
 {
 	return std::all_of(hex.begin(), hex.end(), 
-		[](char c) 
+		[](unsigned char c) 
 		{
 			return (c >= 'a' && c <= 'f' || c >= '0' && c <= '9' || c >= 'A' && c <= 'F');
 		}
@@ -75,13 +75,13 @@ bool checkIfHexString(const std::string & hex)
 }
 
 
-std::vector<char> readFile(const std::string& filepath)
+std::vector<unsigned char> readFile(const std::string& filepath)
 {
 	std::ifstream stream(filepath, std::ios::binary);
 	if (!stream)
 		throw std::runtime_error("Problem reading file " + filepath);
 
-	std::vector<char> fileContents((std::istreambuf_iterator<char>(stream)), std::istreambuf_iterator<char>());
+	std::vector<unsigned char> fileContents((std::istreambuf_iterator<char>(stream)), std::istreambuf_iterator<char>());
 	return fileContents;
 }
 

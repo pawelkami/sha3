@@ -5,13 +5,13 @@
 #include <vector>
 
 
-std::string bin2hex(const std::vector<char>& bin);
+std::string bin2hex(const std::vector<unsigned char>& bin);
 
-std::vector<char> hex2bin(std::string hex);
+std::vector<unsigned char> hex2bin(std::string hex);
 
 bool checkIfHexString(const std::string& hex);
 
-std::vector<char> readFile(const std::string& filepath);
+std::vector<unsigned char> readFile(const std::string& filepath);
 
 bool doFileExist(const std::string& filepath);
 
