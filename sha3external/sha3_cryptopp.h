@@ -15,7 +15,7 @@ public:
 	sha3_cryptopp(int size);
 	~sha3_cryptopp();
 
-	std::string compute(const std::vector<char>& data);
+	std::string compute(const std::vector<unsigned char>& data);
 
 };
 
