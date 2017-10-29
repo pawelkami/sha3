@@ -8,7 +8,7 @@
 std::string bin2hex(const std::vector<unsigned char>& bin)
 {
 	std::string converted;
-	std::string hexCodes = "0123456789ABCDEF";
+	std::string hexCodes = "0123456789abcdef";
 
 	for (const auto& c : bin)
 	{
@@ -27,38 +27,16 @@ std::vector<unsigned char> hex2bin(std::string hex)
 	if(!checkIfHexString(hex))
 		throw std::runtime_error("Given argument was not hex string");
 
-	std::map<unsigned char, unsigned char> hex2binMap =
+	if (hex.size() == 1)	// one digit hex number
 	{
-		std::make_pair('0', 0x00),
-		std::make_pair('1', 0x01),
-		std::make_pair('2', 0x02),
-		std::make_pair('3', 0x03),
-		std::make_pair('4', 0x04),
-		std::make_pair('5', 0x05),
-		std::make_pair('6', 0x06),
-		std::make_pair('7', 0x07),
-		std::make_pair('8', 0x08),
-		std::make_pair('9', 0x09),
-		std::make_pair('a', 0x0a),
-		std::make_pair('b', 0x0b),
-		std::make_pair('c', 0x0c),
-		std::make_pair('d', 0x0d),
-		std::make_pair('e', 0x0e),
-		std::make_pair('f', 0x0f),
-		std::make_pair('A', 0x0a),
-		std::make_pair('B', 0x0b),
-		std::make_pair('C', 0x0c),
-		std::make_pair('D', 0x0d),
-		std::make_pair('E', 0x0e),
-		std::make_pair('F', 0x0f),
-	};
+		binVec.push_back(HEX2DIGIT(hex[0]));
+		return binVec;
+	}
 
-	for (int i = 0; i < hex.size(); i += 2)
+	// an even hex string
+	for (unsigned int i = 0; i < hex.size(); i += 2)
 	{
-		unsigned char c = 0;
-		c |= hex2binMap[hex[i]] << 4;
-		c |= hex2binMap[hex[i + 1] & 0x0f];
-		binVec.push_back(c);
+		binVec.push_back(HEX2DIGIT(hex[i]) << 4 | HEX2DIGIT(hex[i+1]) & 0x0f);
 	}
 
 	return binVec;
