@@ -60,7 +60,7 @@ std::vector<unsigned char> readFile(const std::string& filepath, unsigned from, 
 		throw std::runtime_error("Problem reading file " + filepath);
 
 	std::vector<unsigned char> fileContents((std::istreambuf_iterator<char>(stream)), std::istreambuf_iterator<char>());
-	return fileContents;
+	return std::vector<unsigned char>(fileContents.begin() + from, from + bytesToRead < fileContents.size() ? fileContents.begin() + from + bytesToRead : fileContents.end());
 }
 
 bool doFileExist(const std::string & filepath)

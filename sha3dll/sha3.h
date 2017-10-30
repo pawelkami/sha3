@@ -26,7 +26,6 @@ private:
 	static constexpr unsigned int B = X_MAX * Y_MAX * W_MAX;
 	static constexpr unsigned int BITS_IN_CHAR = sizeof(char) * 8;
 	static constexpr unsigned int Z_MAX = W_MAX / BITS_IN_CHAR;
-	static const uint64_t keccak_round_constants[NUMBER_OF_ROUNDS];
 
 	//typedef std::array<std::array<std::array<unsigned char, Z_MAX>, Y_MAX>, X_MAX> state_array;
 	typedef std::array<std::array<std::array<bit, W_MAX>, Y_MAX>, X_MAX> state_array;
@@ -52,7 +51,8 @@ private:
 	void keccakPi();
 	void keccakChi();
 	void keccakJota(unsigned int round);
-
+	
+	bit rc(unsigned t);
 	void rnd(unsigned int round);
 
 	std::vector<bit> sponge(std::vector<bit>& m, bool isFinal);
