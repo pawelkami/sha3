@@ -39,8 +39,10 @@ std::string HashCtx::computeHash(const std::string& filepath)
 		{
 			strategy->keccak_update(data);
 			data = readFile(filepath, (++i) * strategy->rate, strategy->rate);
-			std::cout << "DUPA" << std::endl;
 		}
+		/*for (auto it : data)
+			std::cout << it;
+		std::cout << std::endl;*/
 		return strategy->keccak_final(data);
 	}
 	else

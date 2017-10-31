@@ -53,7 +53,7 @@ std::vector<sha3::bit> sha3::convertStateArrayToString()
 	for (unsigned i = 0; i < X_MAX; ++i)
 		for (unsigned j = 0; j < Y_MAX; ++j)
 			for (unsigned w = 0; w < W_MAX; ++w)
-				lane[j][i].emplace_back(A[j][i][w]);
+				lane[i][j].emplace_back(A[i][j][w]);
 
 	std::array<std::vector<bit>, Y_MAX> plane;
 	for (unsigned j = 0; j < Y_MAX; ++j)
@@ -69,7 +69,11 @@ std::vector<sha3::bit> sha3::convertStateArrayToString()
 void sha3::pad10_1(unsigned x, unsigned m, std::vector<bit>& p)
 {
 	int j = m;
-	j = (-j - 2) % x;
+	if (abs(-j - 2) % x == 0)
+		j = 0;
+	else
+		j = x - ((m + 2) % x);
+	//std::cout << -(int)m << " - 2 " << " mod " << x << " = " << j << std::endl;
 
 	p.push_back(bit::ONE);
 	for(int i = 0; i < j; ++i)
@@ -86,12 +90,12 @@ std::vector<sha3::bit> sha3::keccakPermutation(std::vector<bit>& m)
 		rnd(i);
 	}
 
-	return convertStateArrayToString();
+	return std::move(convertStateArrayToString());
 }
 
 void sha3::keccakTheta()
 {
-	state_array A_prim;
+	state_array A_prim = A;
 
 	std::array<std::array<bit, W_MAX>, X_MAX> C, D;
 
@@ -114,7 +118,7 @@ void sha3::keccakTheta()
 
 void sha3::keccakRho()
 {
-	state_array A_prim;
+	state_array A_prim = A;
 
 	for (unsigned z = 0; z < W_MAX; ++z)
 		A_prim[0][0][z] = A[0][0][z];
@@ -124,7 +128,20 @@ void sha3::keccakRho()
 	for (unsigned t = 0; t < NUMBER_OF_ROUNDS; ++t)
 	{
 		for (unsigned z = 0; z < W_MAX; ++z)
-			A_prim[x][y][z] = A[x][y][(z - ((t + 1)*(t + 2) >> 1)) % W_MAX];
+		{
+			int z_prim = (z - ((t + 1)*(t + 2) >> 1));
+			if (z_prim < 0)
+			{
+				if((abs(z_prim) % W_MAX) == 0)
+					z_prim = 0;
+				else
+					z_prim = W_MAX - (abs(z_prim) % W_MAX);
+			}
+			else
+				z_prim = z_prim % W_MAX;
+
+			A_prim[x][y][z] = A[x][y][z_prim];
+		}
 		unsigned old_x = x;
 		x = y;
 		y = (2 * old_x + 3 * y) % Y_MAX;
@@ -135,7 +152,7 @@ void sha3::keccakRho()
 
 void sha3::keccakPi()
 {
-	state_array A_prim;
+	state_array A_prim = A;
 
 	for (unsigned x = 0; x < X_MAX; ++x)
 		for (unsigned y = 0; y < Y_MAX; ++y)
@@ -147,12 +164,12 @@ void sha3::keccakPi()
 
 void sha3::keccakChi()
 {
-	state_array A_prim;
+	state_array A_prim = A;
 
 	for (unsigned x = 0; x < X_MAX; ++x)
 		for (unsigned y = 0; y < Y_MAX; ++y)
 			for (unsigned z = 0; z < W_MAX; ++z)
-				A_prim[x][y][z] = bit(A[x][x][z] ^ bit(bit(A[(x+1) % X_MAX][y][z] ^ 1) & A[(x+2) % X_MAX][y][z]));
+				A_prim[x][y][z] = bit(A[x][y][z] ^ bit(bit(A[(x+1) % X_MAX][y][z] ^ 1) & A[(x+2) % X_MAX][y][z]));
 
 	A = A_prim;
 }
@@ -165,7 +182,7 @@ sha3::bit sha3::rc(unsigned t)
 	{
 		std::vector<bit> R = { bit(1), bit(0), bit(0), bit(0), bit(0), bit(0), bit(0), bit(0) };
 
-		for (unsigned i = 1; i < t % 255; ++i)
+		for (unsigned i = 1; i <= t % 255; ++i)
 		{
 			R.insert(R.begin(), bit::ZERO);
 			R[0] = bit(R[0] ^ R[8]);
@@ -186,11 +203,13 @@ void sha3::keccakJota(unsigned int round)
 	A_prim = A;
 
 	std::array<bit, W_MAX> RC;
-	std::for_each(RC.begin(), RC.end(), [](bit it) { it = bit::ZERO; });
+	//std::for_each(RC.begin(), RC.end(), [](bit it) { it = bit::ZERO; });
+	for (unsigned i = 0; i < RC.size(); ++i)
+		RC[i] = bit::ZERO;
 
-	for (unsigned j = 0; j < (NUMBER_OF_ROUNDS - 12) >> 1; ++j)
-		RC[(2 << j) - 1] = rc(j + 7 * round);
-
+	RC[0] = rc(7 * round);
+	for (unsigned j = 1; j <= (NUMBER_OF_ROUNDS - 12) >> 1; ++j)
+		RC[(2 << (j-1)) - 1] = rc(j + 7 * round);
 	for (unsigned z = 0; z < W_MAX; ++z)
 		A_prim[0][0][z] = bit(A_prim[0][0][z] ^ RC[z]);
 
@@ -208,6 +227,9 @@ void sha3::rnd(unsigned int round)
 
 std::vector<sha3::bit> sha3::sponge(std::vector<bit>& m, bool isFinal)
 {
+	//convertStringToStateArray(m);
+	//return convertStateArrayToString();
+
 	if (isFinal)
 	{
 		pad10_1(r, (unsigned)m.size(), m);
@@ -215,7 +237,7 @@ std::vector<sha3::bit> sha3::sponge(std::vector<bit>& m, bool isFinal)
 
 	for (unsigned j = 0; j < c; ++j)
 		m.push_back(bit::ZERO);
-	S = keccakPermutation(xor (S, m));
+	S = keccakPermutation(xor(S, m));
 
 	if (isFinal)
 	{
@@ -223,8 +245,7 @@ std::vector<sha3::bit> sha3::sponge(std::vector<bit>& m, bool isFinal)
 		while (Z.size() < d)
 		{
 			S = keccakPermutation(S);
-			for (unsigned i = 0; i < r; ++i)
-				Z.push_back(S[i]);
+			Z.insert(Z.begin(), S.begin(), S.begin() + r);
 		}
 		return std::move(std::vector<bit>(Z.begin(), Z.begin() + d));
 	}
@@ -256,16 +277,26 @@ sha3::~sha3()
 
 void sha3::keccak_update(const std::vector<unsigned char>& data)
 {
+	//std::cout << "update";
 	std::vector<bit> m = convertStringToBits(data);
 	keccak(m, false);
 }
 
 std::string sha3::keccak_final(const std::vector<unsigned char>& data)
 {
+	//std::cout << "final";
 	std::vector<bit> m = convertStringToBits(data);
 	m.push_back(bit::ZERO);
 	m.push_back(bit::ONE);
 
 	return bin2hex(keccak(m, true));
+
+	//auto k_res = keccak(m, true);
+	//std::string hash;
+
+	//for (auto ch : k_res)
+	//	hash += static_cast<char>(ch);
+
+	//return hash;
 }
 
