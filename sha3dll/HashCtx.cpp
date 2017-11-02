@@ -1,7 +1,7 @@
 #include "HashCtx.h"
 #include "sha3.h"
 
-
+#define MAX_BUF_FILESIZE (1 << 20)	// 1MB
 
 HashCtx::HashCtx()
 {
@@ -34,16 +34,26 @@ std::string HashCtx::computeHash(const std::string& filepath)
 	if (strategy)
 	{
 		int i = 0;
-		std::vector<unsigned char> data = readFile(filepath, i * strategy->rate, strategy->rate);
-		while (data.size() == strategy->rate) // rate bits ; rate = 1600 - 2 * output_size
+		long filesize = getFileSize(filepath);
+		std::vector<unsigned char> data;
+		do
 		{
-			strategy->keccak_update(data);
-			data = readFile(filepath, (++i) * strategy->rate, strategy->rate);
+			data = readFile(filepath, (i++) * MAX_BUF_FILESIZE, MAX_BUF_FILESIZE);
+			strategy->update(data);
+
+		} while (i < filesize / MAX_BUF_FILESIZE); // how many times we have to read
+		
+		data.clear();
+
+		if (filesize % MAX_BUF_FILESIZE)	// rest of bytes
+		{
+			data = readFile(filepath, i * MAX_BUF_FILESIZE, MAX_BUF_FILESIZE);
 		}
+
 		/*for (auto it : data)
 			std::cout << it;
 		std::cout << std::endl;*/
-		return strategy->keccak_final(data);
+		return strategy->final(data);
 	}
 	else
 		throw std::runtime_error("Hash algorithm wasn't chosen");

@@ -4,6 +4,7 @@
 #include <algorithm>
 #include <map>
 #include <fstream>
+#include <memory>
 
 std::string bin2hex(const std::vector<unsigned char>& bin)
 {
@@ -52,6 +53,16 @@ bool checkIfHexString(const std::string & hex)
 	);
 }
 
+std::vector<unsigned char> readFile(const std::string & filepath)
+{
+	std::ifstream stream(filepath, std::ios::binary);
+	if (!stream)
+		throw std::runtime_error("Problem reading file " + filepath);
+
+	std::vector<unsigned char> fileContents((std::istreambuf_iterator<char>(stream)), std::istreambuf_iterator<char>());
+	return fileContents;
+}
+
 
 std::vector<unsigned char> readFile(const std::string& filepath, unsigned from, unsigned bytesToRead)
 {
@@ -59,10 +70,19 @@ std::vector<unsigned char> readFile(const std::string& filepath, unsigned from, 
 	if (!stream)
 		throw std::runtime_error("Problem reading file " + filepath);
 
-	std::vector<unsigned char> fileContents((std::istreambuf_iterator<char>(stream)), std::istreambuf_iterator<char>());
-	return std::vector<unsigned char>(fileContents.begin() + from, from + bytesToRead < fileContents.size() ? fileContents.begin() + from + bytesToRead : fileContents.end());
+	std::unique_ptr<unsigned char> buf(new unsigned char[bytesToRead]);
+	stream.seekg(from);
+	stream.read((char*)buf.get(), bytesToRead);
+
+	return std::vector<unsigned char>(buf.get(), buf.get() + stream.gcount());
 }
 
+long getFileSize(const std::string& filename)
+{
+	struct stat stat_buf;
+	int rc = stat(filename.c_str(), &stat_buf);
+	return rc == 0 ? stat_buf.st_size : -1;
+}
 bool doFileExist(const std::string & filepath)
 {
 	std::ifstream f(filepath);

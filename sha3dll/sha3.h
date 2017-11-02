@@ -35,6 +35,9 @@ private:
 	unsigned c;
 	unsigned r;
 	unsigned d;
+	unsigned rate;
+
+	std::vector<unsigned char> rest;
 
 	inline std::vector<bit> xor(const std::vector<bit>& f, const std::vector<bit>& s);
 
@@ -62,8 +65,11 @@ public:
 	sha3();
 	sha3(int size);
 	~sha3();
-	void keccak_update(const std::vector<unsigned char>& data);
-	std::string keccak_final(const std::vector<unsigned char>& data);
+	void update(const std::vector<unsigned char>& data);
+	std::string final(const std::vector<unsigned char>& data);
+
+	virtual std::string compute(const std::vector<unsigned char>& data);
+
 };
 
 #endif

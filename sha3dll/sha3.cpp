@@ -275,17 +275,33 @@ sha3::~sha3()
 {
 }
 
-void sha3::keccak_update(const std::vector<unsigned char>& data)
+void sha3::update(const std::vector<unsigned char>& data)
 {
-	//std::cout << "update";
-	std::vector<bit> m = convertStringToBits(data);
-	keccak(m, false);
+	for (int i = 0; i < data.size(); )
+	{
+		unsigned countOfFreeBytesInRest = rate - rest.size();	// how many bytes we can save to rest buffer
+		if (data.size() < i + countOfFreeBytesInRest)
+		{	
+			// if there is less than "rate" bytes, save rest bytes to buffer and return
+			rest.insert(rest.end(), data.data() + i, data.data() + data.size());
+			return;
+		}
+
+		// insert bytes to rest and than keccak
+		rest.insert( rest.end(), data.data() + i, data.data() + i + countOfFreeBytesInRest );
+		std::vector<bit> m = convertStringToBits(rest);
+		keccak(m, false);
+
+		i += countOfFreeBytesInRest;	// how many bytes were read
+		rest.clear();	// clear buffer for new data :)
+	}
 }
 
-std::string sha3::keccak_final(const std::vector<unsigned char>& data)
+std::string sha3::final(const std::vector<unsigned char>& data)
 {
 	//std::cout << "final";
-	std::vector<bit> m = convertStringToBits(data);
+	update(data);
+	std::vector<bit> m = convertStringToBits(rest);
 	m.push_back(bit::ZERO);
 	m.push_back(bit::ONE);
 
@@ -298,5 +314,10 @@ std::string sha3::keccak_final(const std::vector<unsigned char>& data)
 	//	hash += static_cast<char>(ch);
 
 	//return hash;
+}
+
+std::string sha3::compute(const std::vector<unsigned char>& data)
+{
+	return final(data);
 }
 
