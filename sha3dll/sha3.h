@@ -20,6 +20,7 @@ private:
 	};
 
 	static const unsigned int NUMBER_OF_ROUNDS = 24;
+	static const uint64_t keccak_round_constants[NUMBER_OF_ROUNDS];
 	static const unsigned int X_MAX = 5;
 	static const unsigned int Y_MAX = 5;
 	static const unsigned int W_MAX = 64;

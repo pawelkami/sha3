@@ -1,5 +1,14 @@
 #include "sha3.h"
 
+const uint64_t sha3::keccak_round_constants[NUMBER_OF_ROUNDS] = {
+	0x0000000000000001, 0x0000000000008082, 0x800000000000808A, 0x8000000080008000,
+	0x000000000000808B, 0x0000000080000001, 0x8000000080008081, 0x8000000000008009,
+	0x000000000000008A, 0x0000000000000088, 0x0000000080008009, 0x000000008000000A,
+	0x000000008000808B, 0x800000000000008B, 0x8000000000008089, 0x8000000000008003,
+	0x8000000000008002, 0x8000000000000080, 0x000000000000800A, 0x800000008000000A,
+	0x8000000080008081, 0x8000000000008080, 0x0000000080000001, 0x8000000080008008
+};
+
 std::vector<sha3::bit> sha3:: xor(const std::vector<bit>& f, const std::vector<bit>& s)
 {
 	std::vector<bit> xored;
@@ -176,13 +185,14 @@ void sha3::keccakChi()
 
 sha3::bit sha3::rc(unsigned t)
 {
-	if (t % 255 == 0)
+	const unsigned tmod255 = t % 255;
+	if (tmod255 == 0)
 		return sha3::bit::ONE;
 	else 
 	{
 		std::vector<bit> R = { bit(1), bit(0), bit(0), bit(0), bit(0), bit(0), bit(0), bit(0) };
 
-		for (unsigned i = 1; i <= t % 255; ++i)
+		for (unsigned i = 1; i <= tmod255; ++i)
 		{
 			R.insert(R.begin(), bit::ZERO);
 			R[0] = bit(R[0] ^ R[8]);
@@ -202,16 +212,19 @@ void sha3::keccakJota(unsigned int round)
 
 	A_prim = A;
 
-	std::array<bit, W_MAX> RC;
-	//std::for_each(RC.begin(), RC.end(), [](bit it) { it = bit::ZERO; });
-	for (unsigned i = 0; i < RC.size(); ++i)
-		RC[i] = bit::ZERO;
+	for (int z = 0; z < W_MAX; z += 8)
+	{
+		unsigned char byte = (keccak_round_constants[round] >> z) & 0xff;
+		A_prim[0][0][z] = bit( A_prim[0][0][z] ^ (byte & 0x01 ? 1 : 0) );
+		A_prim[0][0][z + 1] = bit(A_prim[0][0][z + 1] ^ (byte & 0x02 ? 1 : 0));
+		A_prim[0][0][z + 2] = bit(A_prim[0][0][z + 2] ^ (byte & 0x04 ? 1 : 0));
+		A_prim[0][0][z + 3] = bit(A_prim[0][0][z + 3] ^ (byte & 0x08 ? 1 : 0));
+		A_prim[0][0][z + 4] = bit(A_prim[0][0][z + 4] ^ (byte & 0x10 ? 1 : 0));
+		A_prim[0][0][z + 5] = bit(A_prim[0][0][z + 5] ^ (byte & 0x20 ? 1 : 0));
+		A_prim[0][0][z + 6] = bit(A_prim[0][0][z + 6] ^ (byte & 0x40 ? 1 : 0));
+		A_prim[0][0][z + 7] = bit(A_prim[0][0][z + 7] ^ (byte & 0x80 ? 1 : 0));
 
-	RC[0] = rc(7 * round);
-	for (unsigned j = 1; j <= (NUMBER_OF_ROUNDS - 12) >> 1; ++j)
-		RC[(2 << (j-1)) - 1] = rc(j + 7 * round);
-	for (unsigned z = 0; z < W_MAX; ++z)
-		A_prim[0][0][z] = bit(A_prim[0][0][z] ^ RC[z]);
+	}
 
 	A = A_prim;
 }
@@ -235,8 +248,8 @@ std::vector<sha3::bit> sha3::sponge(std::vector<bit>& m, bool isFinal)
 		pad10_1(r, (unsigned)m.size(), m);
 	}
 
-	for (unsigned j = 0; j < c; ++j)
-		m.push_back(bit::ZERO);
+	m.insert(m.end(), c, bit::ZERO);
+	
 	S = keccakPermutation(xor(S, m));
 
 	if (isFinal)
