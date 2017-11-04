@@ -36,12 +36,12 @@ std::string HashCtx::computeHash(const std::string& filepath)
 		int i = 0;
 		long filesize = getFileSize(filepath);
 		std::vector<unsigned char> data;
-		do
+		while (i < filesize / MAX_BUF_FILESIZE)
 		{
 			data = readFile(filepath, (i++) * MAX_BUF_FILESIZE, MAX_BUF_FILESIZE);
 			strategy->update(data);
 
-		} while (i < filesize / MAX_BUF_FILESIZE); // how many times we have to read
+		}// how many times we have to read
 		
 		data.clear();
 

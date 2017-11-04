@@ -23,16 +23,14 @@ const uint8_t sha3::pi_positions[NUMBER_OF_ROUNDS] = {
 
 uint64_t sha3::rotl64(uint64_t n, int c)
 {
-	const int mask = (CHAR_BIT * sizeof(n) - 1);
-	c &= mask;
-	return (n << c) | (n >> ((-c)&mask));
+	uint8_t s = c >= 0 ? c % 64 : -((-c) % 64);
+	return (n << s) | (n >> (64 - s));
 }
 
 uint64_t sha3::rotr64(uint64_t n, int c)
 {
-	const int mask = (CHAR_BIT * sizeof(n) - 1);
-	c &= mask;
-	return (n >> c) | (n << ((-c)&mask));
+	uint8_t s = c >= 0 ? c % 64 : -((-c) % 64);
+	return (n >> s) | (n << (64 - s));
 }
 
 void sha3::convertStringToStateArray(const std::vector<unsigned char>& str)
@@ -126,26 +124,19 @@ void sha3::keccakPi()
 
 void sha3::keccakChi()
 {
-	state_array A_prim = A;
-
 	for (int i = 0; i < NUMBER_OF_ROUNDS; i += 5) {
-		A_prim[0 + i] ^= ~A[1 + i] & A[2 + i];
-		A_prim[1 + i] ^= ~A[2 + i] & A[3 + i];
-		A_prim[2 + i] ^= ~A[3 + i] & A[4 + i];
-		A_prim[3 + i] ^= ~A[4 + i] & A[i];
-		A_prim[4 + i] ^= ~A[i] & A[1 + i];
+		uint64_t A0 = A[0 + i], A1 = A[1 + i];
+		A[0 + i] ^= ~A1 & A[2 + i];
+		A[1 + i] ^= ~A[2 + i] & A[3 + i];
+		A[2 + i] ^= ~A[3 + i] & A[4 + i];
+		A[3 + i] ^= ~A[4 + i] & A0;
+		A[4 + i] ^= ~A0 & A1;
 	}
-	
-	A = A_prim;
 }
 
 void sha3::keccakJota(unsigned int round)
 {
-	state_array A_prim = A;
-
-	A_prim[0] ^= keccak_round_constants[round];
-	
-	A = A_prim;
+	A[0] ^= keccak_round_constants[round];
 }
 
 void sha3::rnd(unsigned int round)
@@ -172,7 +163,7 @@ std::vector<unsigned char> sha3::sponge(const std::vector<unsigned char>& m)
 
 std::vector<unsigned char> sha3::keccak(const std::vector<unsigned char>& m)
 {
-	return std::move(sponge(m));
+	return sponge(m);
 }
 
 sha3::sha3()
@@ -216,14 +207,12 @@ void sha3::update(const std::vector<unsigned char>& data)
 
 std::string sha3::final(const std::vector<unsigned char>& data)
 {
-	std::vector<unsigned char> dt = data;
-
-	dt.push_back((unsigned char)(0x01));
-
-	do 
+	do
 	{
-		update(dt);
+		update(data);
 	} while (rest.size() > rate);
+
+	rest.push_back((unsigned char)(0x81));
 
 	std::vector<unsigned char> z;
 	std::vector<unsigned char> res = keccak(rest);
@@ -241,4 +230,3 @@ std::string sha3::compute(const std::vector<unsigned char>& data)
 {
 	return final(data);
 }
-
