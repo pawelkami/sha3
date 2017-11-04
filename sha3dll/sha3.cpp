@@ -73,11 +73,9 @@ std::vector<unsigned char> sha3::keccakPermutation(const std::vector<unsigned ch
 	convertStringToStateArray(m);
 	
 	for (int i = 0; i < NUMBER_OF_ROUNDS; ++i)
-	{
 		rnd(i);
-	}
 
-	return convertStateArrayToString();
+	return std::move(convertStateArrayToString());
 }
 
 void sha3::keccakTheta()
@@ -110,9 +108,8 @@ void sha3::keccakRho()
 {
 	state_array A_prim = A;
 
-	int i = 1;
-	for (uint8_t rot : rho_offset)
-		A_prim[i] = rotl64(A[i++], rot);
+	for (int i = 1; i < X*Y; ++i)
+		A_prim[i] = rotl64(A[i], rho_offset[i-1]);
 
 	A = A_prim;
 }
@@ -121,9 +118,8 @@ void sha3::keccakPi()
 {
 	state_array A_prim = A;
 
-	int i = 0;
-	for (uint8_t pos : pi_positions)
-		A_prim[i + 1] = A[pi_positions[++i]];
+	for (int i = 1; i < X*Y; ++i)
+		A_prim[i] = A[pi_positions[i-1]];
 
 	A = A_prim;
 }
@@ -161,16 +157,22 @@ void sha3::rnd(unsigned int round)
 	keccakJota(round);
 }
 
-std::vector<unsigned char> sha3::sponge(const std::vector<unsigned char>& m, bool isFinal)
+std::vector<unsigned char> sha3::sponge(const std::vector<unsigned char>& m)
 {
-	convertStringToStateArray(m);
-	// TODO
-	return std::move(convertStateArrayToString());
+	std::vector<unsigned char> data;
+
+	int i = 0;
+	for (; i < m.size(); ++i)
+		data.push_back((unsigned char)(S[i] ^ m[i]));
+	data.insert(data.end(), S.begin() + i, S.end());
+
+	S = keccakPermutation(data);
+	return S;
 }
 
-std::vector<unsigned char> sha3::keccak(const std::vector<unsigned char>& m, bool isFinal)
+std::vector<unsigned char> sha3::keccak(const std::vector<unsigned char>& m)
 {
-	return std::move(sponge(m, isFinal));
+	return std::move(sponge(m));
 }
 
 sha3::sha3()
@@ -182,6 +184,10 @@ sha3::sha3(int size)
 	d = size;
 	c = 2 * size; 
 	r = B - c; // r = b - c
+	rate = r >> 3;
+
+	for (int i = 0; i < B >> 3; ++i)
+		S.push_back('\0');
 }
 
 
@@ -191,35 +197,44 @@ sha3::~sha3()
 
 void sha3::update(const std::vector<unsigned char>& data)
 {
-	//for (int i = 0; i < data.size(); )
-	//{
-	//	unsigned countOfFreeBytesInRest = rate - rest.size();	// how many bytes we can save to rest buffer
-	//	if (data.size() < i + countOfFreeBytesInRest)
-	//	{	
-	//		// if there is less than "rate" bytes, save rest bytes to buffer and return
-	//		rest.insert(rest.end(), data.data() + i, data.data() + data.size());
-	//		return;
-	//	}
+	std::vector<std::vector<unsigned char> > p;
+	std::vector<unsigned char> all = rest;
+	
+	all.insert(all.end(), data.begin(), data.end());
 
-	//	// insert bytes to rest and than keccak
-	//	rest.insert( rest.end(), data.data() + i, data.data() + i + countOfFreeBytesInRest );
-	//	std::vector<bit> m = convertStringToBits(rest);
-	//	keccak(m, false);
+	int i = 0;
+	for (; i < all.size() / rate; ++i)
+		p.push_back(std::vector<unsigned char>(all.begin() + i * rate, all.begin() + (i+1) * rate));
+	
+	int l = all.size() % rate;
+	if (l)
+		rest = std::vector<unsigned char>(all.end() - l, all.end());
 
-	//	i += countOfFreeBytesInRest;	// how many bytes were read
-	//	rest.clear();	// clear buffer for new data :)
-	//}
+	for(auto p_i : p)
+		S = keccak(p_i);
 }
 
 std::string sha3::final(const std::vector<unsigned char>& data)
 {
-	//update(data);
-	//std::vector<bit> m = convertStringToBits(rest);
-	//m.push_back(bit::ZERO);
-	//m.push_back(bit::ONE);
+	std::vector<unsigned char> dt = data;
 
-	//return bin2hex(keccak(m, true));
-	return bin2hex(keccak(data, true));
+	dt.push_back((unsigned char)(0x01));
+
+	do 
+	{
+		update(dt);
+	} while (rest.size() > rate);
+
+	std::vector<unsigned char> z;
+	std::vector<unsigned char> res = keccak(rest);
+
+	do
+	{
+		z.insert(z.end(), res.begin(), res.begin() + rate);
+		S = keccakPermutation(S);
+	} while (z.size() < (d >> 3));
+
+	return bin2hex(std::vector<unsigned char>(z.begin(), z.begin() + (d >> 3)));
 }
 
 std::string sha3::compute(const std::vector<unsigned char>& data)

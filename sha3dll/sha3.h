@@ -26,16 +26,16 @@ private:
 	typedef std::array<uint64_t, X*Y> state_array;
 
 	state_array A;
+	std::vector<unsigned char> S;
+	std::vector<unsigned char> rest;
 	
 	unsigned c;
 	unsigned r;
 	unsigned d;
-	//unsigned rate;
+	unsigned rate;
 
 	inline uint64_t rotl64(uint64_t n, int c);
 	inline uint64_t rotr64(uint64_t n, int c);
-
-	std::vector<unsigned char> rest;
 
 	void convertStringToStateArray(const std::vector<unsigned char>& str);
 	std::vector<unsigned char> convertStateArrayToString();
@@ -49,8 +49,8 @@ private:
 	
 	void rnd(unsigned int round);
 
-	std::vector<unsigned char> sponge(const std::vector<unsigned char>& m, bool isFinal);
-	std::vector<unsigned char> keccak(const std::vector<unsigned char>& m, bool isFinal);
+	std::vector<unsigned char> sponge(const std::vector<unsigned char>& m);
+	std::vector<unsigned char> keccak(const std::vector<unsigned char>& m);
 
 public:
 	sha3();

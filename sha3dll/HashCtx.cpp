@@ -50,9 +50,6 @@ std::string HashCtx::computeHash(const std::string& filepath)
 			data = readFile(filepath, i * MAX_BUF_FILESIZE, MAX_BUF_FILESIZE);
 		}
 
-		/*for (auto it : data)
-			std::cout << it;
-		std::cout << std::endl;*/
 		return strategy->final(data);
 	}
 	else

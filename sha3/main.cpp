@@ -57,6 +57,7 @@ int main(int argc, char** argv)
 			throw std::runtime_error("File path is invalid");
 
 		std::cout << hashCtx.computeHash(filepath) << std::endl;
+		getchar();
 	}
 	catch (const error &ex)
 	{
