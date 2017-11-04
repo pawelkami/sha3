@@ -14,53 +14,43 @@ class sha3 :
 {
 private:
 
-	enum bit : uint8_t {
-		ZERO = 0x00,
-		ONE = 0x01
-	};
-
+	static const unsigned int X = 5;
+	static const unsigned int Y = 5;
+	static const unsigned int W = 64;
+	static const unsigned int B = 1600;
 	static const unsigned int NUMBER_OF_ROUNDS = 24;
 	static const uint64_t keccak_round_constants[NUMBER_OF_ROUNDS];
-	static const unsigned int X_MAX = 5;
-	static const unsigned int Y_MAX = 5;
-	static const unsigned int W_MAX = 64;
-	static constexpr unsigned int B = X_MAX * Y_MAX * W_MAX;
-	static constexpr unsigned int BITS_IN_CHAR = sizeof(char) * 8;
-	static constexpr unsigned int Z_MAX = W_MAX / BITS_IN_CHAR;
+	static const uint8_t rho_offset[NUMBER_OF_ROUNDS];
+	static const uint8_t pi_positions[NUMBER_OF_ROUNDS];
 
-	//typedef std::array<std::array<std::array<unsigned char, Z_MAX>, Y_MAX>, X_MAX> state_array;
-	typedef std::array<std::array<std::array<bit, W_MAX>, Y_MAX>, X_MAX> state_array;
+	typedef std::array<uint64_t, X*Y> state_array;
 
-	std::vector<bit> S;
 	state_array A;
+	
 	unsigned c;
 	unsigned r;
 	unsigned d;
-	unsigned rate;
+	//unsigned rate;
+
+	inline uint64_t rotl64(uint64_t n, int c);
+	inline uint64_t rotr64(uint64_t n, int c);
 
 	std::vector<unsigned char> rest;
 
-	inline std::vector<bit> xor(const std::vector<bit>& f, const std::vector<bit>& s);
+	void convertStringToStateArray(const std::vector<unsigned char>& str);
+	std::vector<unsigned char> convertStateArrayToString();
 
-	std::vector<bit> convertStringToBits(const std::vector<unsigned char>& str);
-	std::vector<unsigned char> convertBitsToString(const std::vector<bit>& bits);
-	void convertStringToStateArray(const std::vector<bit>& str);
-	std::vector<bit> convertStateArrayToString();
-
-	void pad10_1(unsigned x, unsigned m, std::vector<bit>& p);
-
-	std::vector<sha3::bit> keccakPermutation(std::vector<bit>& m);
+	std::vector<unsigned char> keccakPermutation(const std::vector<unsigned char>& m);
 	void keccakTheta();
 	void keccakRho();
 	void keccakPi();
 	void keccakChi();
 	void keccakJota(unsigned int round);
 	
-	bit rc(unsigned t);
 	void rnd(unsigned int round);
 
-	std::vector<bit> sponge(std::vector<bit>& m, bool isFinal);
-	std::vector<unsigned char> keccak(std::vector<bit>& m, bool isFinal);
+	std::vector<unsigned char> sponge(const std::vector<unsigned char>& m, bool isFinal);
+	std::vector<unsigned char> keccak(const std::vector<unsigned char>& m, bool isFinal);
 
 public:
 	sha3();
