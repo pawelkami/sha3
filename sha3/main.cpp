@@ -19,8 +19,7 @@ int main(int argc, char** argv)
 			("224", value<std::string>()->value_name("file"), "Program computes SHA3-224 of file")
 			("256", value<std::string>()->value_name("file"), "Program computes SHA3-256 of file")
 			("384", value<std::string>()->value_name("file"), "Program computes SHA3-384 of file")
-			("512", value<std::string>()->value_name("file"), "Program computes SHA3-512 of file")
-			("rhash", value<std::string>()->value_name("file"), "Program computes SHA3-224 of file");
+			("512", value<std::string>()->value_name("file"), "Program computes SHA3-512 of file");
 
 		variables_map vm;
 		store(parse_command_line(argc, argv, desc), vm);
