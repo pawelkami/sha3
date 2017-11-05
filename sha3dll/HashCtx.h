@@ -17,6 +17,7 @@ public:
 		SHA3_256 = 1,
 		SHA3_384 = 2,
 		SHA3_512 = 3,
+		RHASH = 4
 	};
 
 	HashCtx();

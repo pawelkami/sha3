@@ -37,14 +37,14 @@ void sha3::convertStringToStateArray(const std::vector<unsigned char>& str)
 {
 	int j = 0;
 	for (int i = 0; i < X*Y; ++i)
-		A[i] = ((uint64_t)(str[j++]) << 56 & 0xFF00000000000000U) |
-		       ((uint64_t)(str[j++]) << 48 & 0x00FF000000000000U) |
-			   ((uint64_t)(str[j++]) << 40 & 0x0000FF0000000000U) |
-			   ((uint64_t)(str[j++]) << 32 & 0x000000FF00000000U) |
-			   ((uint64_t)(str[j++]) << 24 & 0x00000000FF000000U) |
-			   ((uint64_t)(str[j++]) << 16 & 0x0000000000FF0000U) |
-			   ((uint64_t)(str[j++]) << 8  & 0x000000000000FF00U) |
-			   ((uint64_t)(str[j++])       & 0x00000000000000FFU);
+		A[i] =  ((uint64_t)(str[j++]) & 0x00000000000000FFU) |
+				((uint64_t)(str[j++]) << 8 & 0x000000000000FF00U) |
+				((uint64_t)(str[j++]) << 16 & 0x0000000000FF0000U) |
+				((uint64_t)(str[j++]) << 24 & 0x00000000FF000000U) |
+				((uint64_t)(str[j++]) << 32 & 0x000000FF00000000U) |
+				((uint64_t)(str[j++]) << 40 & 0x0000FF0000000000U) |
+				((uint64_t)(str[j++]) << 48 & 0x00FF000000000000U) |
+				((uint64_t)(str[j++]) << 56 & 0xFF00000000000000U);
 }
 
 std::vector<unsigned char> sha3::convertStateArrayToString()
@@ -53,14 +53,14 @@ std::vector<unsigned char> sha3::convertStateArrayToString()
 
 	for (int i = 0; i < X*Y; ++i)
 	{
-		str.push_back(static_cast<unsigned char>(uint8_t((A[i] & 0xFF00000000000000U) >> 56)));
-		str.push_back(static_cast<unsigned char>(uint8_t((A[i] & 0x00FF000000000000U) >> 48)));
-		str.push_back(static_cast<unsigned char>(uint8_t((A[i] & 0x0000FF0000000000U) >> 40)));
-		str.push_back(static_cast<unsigned char>(uint8_t((A[i] & 0x000000FF00000000U) >> 32)));
-		str.push_back(static_cast<unsigned char>(uint8_t((A[i] & 0x00000000FF000000U) >> 24)));
-		str.push_back(static_cast<unsigned char>(uint8_t((A[i] & 0x0000000000FF0000U) >> 16)));
-		str.push_back(static_cast<unsigned char>(uint8_t((A[i] & 0x000000000000FF00U) >> 8)));
 		str.push_back(static_cast<unsigned char>(uint8_t((A[i] & 0x00000000000000FFU))));
+		str.push_back(static_cast<unsigned char>(uint8_t((A[i] & 0x000000000000FF00U) >> 8)));
+		str.push_back(static_cast<unsigned char>(uint8_t((A[i] & 0x0000000000FF0000U) >> 16)));
+		str.push_back(static_cast<unsigned char>(uint8_t((A[i] & 0x00000000FF000000U) >> 24)));
+		str.push_back(static_cast<unsigned char>(uint8_t((A[i] & 0x000000FF00000000U) >> 32)));
+		str.push_back(static_cast<unsigned char>(uint8_t((A[i] & 0x0000FF0000000000U) >> 40)));
+		str.push_back(static_cast<unsigned char>(uint8_t((A[i] & 0x00FF000000000000U) >> 48)));
+		str.push_back(static_cast<unsigned char>(uint8_t((A[i] & 0xFF00000000000000U) >> 56)));
 	}
 
 	return std::move(str);
@@ -78,7 +78,6 @@ std::vector<unsigned char> sha3::keccakPermutation(const std::vector<unsigned ch
 
 void sha3::keccakTheta()
 {
-	state_array A_prim = A;
 	uint64_t C[X], D[X];
 
 	for (int x = 0; x < X; x++)
@@ -92,24 +91,18 @@ void sha3::keccakTheta()
 
 	for (int x = 0; x < X; x++)
 	{
-		A_prim[x] ^= D[x];
-		A_prim[x + 5] ^= D[x];
-		A_prim[x + 10] ^= D[x];
-		A_prim[x + 15] ^= D[x];
-		A_prim[x + 20] ^= D[x];
+		A[x] ^= D[x];
+		A[x + 5] ^= D[x];
+		A[x + 10] ^= D[x];
+		A[x + 15] ^= D[x];
+		A[x + 20] ^= D[x];
 	}
-
-	A = A_prim;
 }
 
 void sha3::keccakRho()
 {
-	state_array A_prim = A;
-
 	for (int i = 1; i < X*Y; ++i)
-		A_prim[i] = rotl64(A[i], rho_offset[i-1]);
-
-	A = A_prim;
+		A[i] = rotl64(A[i], rho_offset[i-1]);
 }
 
 void sha3::keccakPi()
@@ -124,7 +117,7 @@ void sha3::keccakPi()
 
 void sha3::keccakChi()
 {
-	for (int i = 0; i < NUMBER_OF_ROUNDS; i += 5) {
+	for (int i = 0; i < X*Y; i += 5) {
 		uint64_t A0 = A[0 + i], A1 = A[1 + i];
 		A[0 + i] ^= ~A1 & A[2 + i];
 		A[1 + i] ^= ~A[2 + i] & A[3 + i];
@@ -177,8 +170,7 @@ sha3::sha3(int size)
 	r = B - c; // r = b - c
 	rate = r >> 3;
 
-	for (int i = 0; i < B >> 3; ++i)
-		S.push_back('\0');
+	S.assign(B, 0);
 }
 
 
@@ -212,16 +204,18 @@ std::string sha3::final(const std::vector<unsigned char>& data)
 		update(data);
 	} while (rest.size() > rate);
 
-	rest.push_back((unsigned char)(0x81));
+	rest.push_back(0x06);
+
+	for (int i = rest.size(); i < rate; i++)
+		rest.push_back(0);
+
+	rest[rate - 1] |= 0x80;
+	
 
 	std::vector<unsigned char> z;
 	std::vector<unsigned char> res = keccak(rest);
 
-	do
-	{
-		z.insert(z.end(), res.begin(), res.begin() + rate);
-		S = keccakPermutation(S);
-	} while (z.size() < (d >> 3));
+	z.insert(z.end(), res.begin(), res.begin() + rate);
 
 	return bin2hex(std::vector<unsigned char>(z.begin(), z.begin() + (d >> 3)));
 }
