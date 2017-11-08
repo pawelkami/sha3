@@ -32,8 +32,8 @@ class UI(tk.Frame):
         self.path = tk.Entry(self, textvariable=self.file, width=40)
         self.path.config(state='readonly')
 
-        self.exploreBtn = tk.Button(self, text="Explore", command=self.pickFile)
-        self.computeBtn = tk.Button(self, text="Compute", command=self.compute)
+        self.exploreBtn = tk.Button(self, text="Select file", command=self.pickFile)
+        self.computeBtn = tk.Button(self, text="Compute digest", command=self.compute)
 
         self.sha224Btn = tk.Radiobutton(self, text="224 bit", variable=self.sha_opt, value=sha3dll.HashType.SHA3_224)
         self.sha256Btn = tk.Radiobutton(self, text="256 bit", variable=self.sha_opt, value=sha3dll.HashType.SHA3_256)
@@ -75,7 +75,7 @@ class UI(tk.Frame):
         dialog = tk.Toplevel()
         ws = root.winfo_screenwidth()
         hs = root.winfo_screenheight()
-        w = 280
+        w = 300
         h = 100
         dialog.geometry("%dx%d+%d+%d" % (w, h, ws / 2 - w / 2, hs / 2 - h / 2))
         dialog.title('Info')
@@ -122,7 +122,7 @@ if __name__ == "__main__":
     root.wm_title('SHA3 Algorithm')
     ws = root.winfo_screenwidth()
     hs = root.winfo_screenheight()
-    w = 320
+    w = 350
     h = 150
     root.geometry("%dx%d+%d+%d" % (w, h, ws / 2 - w / 2, hs / 2 - h / 2))
     UI(root, ).pack(fill="both", expand=True)

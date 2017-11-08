@@ -40,7 +40,7 @@ private:
 	void convertStringToStateArray(const std::vector<unsigned char>& str);
 	std::vector<unsigned char> convertStateArrayToString();
 
-	std::vector<unsigned char> keccakPermutation(const std::vector<unsigned char>& m);
+	void keccakPermutation();
 	void keccakTheta();
 	void keccakRho();
 	void keccakPi();
@@ -49,8 +49,8 @@ private:
 	
 	void rnd(unsigned int round);
 
-	std::vector<unsigned char> sponge(const std::vector<unsigned char>& m);
-	std::vector<unsigned char> keccak(const std::vector<unsigned char>& m);
+	void sponge(const std::vector<unsigned char>& m);
+	void keccak(const std::vector<unsigned char>& m);
 
 public:
 	sha3();

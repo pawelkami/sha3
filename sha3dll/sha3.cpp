@@ -23,8 +23,7 @@ const uint8_t sha3::pi_positions[NUMBER_OF_ROUNDS] = {
 
 uint64_t sha3::rotl64(uint64_t n, int c)
 {
-	uint8_t s = c >= 0 ? c % 64 : -((-c) % 64);
-	return (n << s) | (n >> (64 - s));
+	return (n << c) | (n >> (64 - c));
 }
 
 uint64_t sha3::rotr64(uint64_t n, int c)
@@ -66,14 +65,10 @@ std::vector<unsigned char> sha3::convertStateArrayToString()
 	return std::move(str);
 }
 
-std::vector<unsigned char> sha3::keccakPermutation(const std::vector<unsigned char>& m)
-{
-	convertStringToStateArray(m);
-	
+void sha3::keccakPermutation()
+{	
 	for (int i = 0; i < NUMBER_OF_ROUNDS; ++i)
 		rnd(i);
-
-	return std::move(convertStateArrayToString());
 }
 
 void sha3::keccakTheta()
@@ -141,22 +136,30 @@ void sha3::rnd(unsigned int round)
 	keccakJota(round);
 }
 
-std::vector<unsigned char> sha3::sponge(const std::vector<unsigned char>& m)
+void sha3::sponge(const std::vector<unsigned char>& m)
 {
-	std::vector<unsigned char> data;
+	int i = 0, j = 0;
+	for (; i < m.size(); i += 8)
+	{
+		uint64_t d = 0;
+		d |= ((uint64_t)m[i]);
+		d |= ((uint64_t)m[i + 1] << 8);
+		d |= ((uint64_t)m[i + 2] << 16);
+		d |= ((uint64_t)m[i + 3] << 24);
+		d |= ((uint64_t)m[i + 4] << 32);
+		d |= ((uint64_t)m[i + 5] << 40);
+		d |= ((uint64_t)m[i + 6] << 48);
+		d |= ((uint64_t)m[i + 7] << 56);
 
-	int i = 0;
-	for (; i < m.size(); ++i)
-		data.push_back((unsigned char)(S[i] ^ m[i]));
-	data.insert(data.end(), S.begin() + i, S.end());
+		A[j++] ^= d;
+	}
 
-	S = keccakPermutation(data);
-	return S;
+	keccakPermutation();
 }
 
-std::vector<unsigned char> sha3::keccak(const std::vector<unsigned char>& m)
+void sha3::keccak(const std::vector<unsigned char>& m)
 {
-	return sponge(m);
+	sponge(m);
 }
 
 sha3::sha3()
@@ -171,6 +174,7 @@ sha3::sha3(int size)
 	rate = r >> 3;
 
 	S.assign(B, 0);
+	A.assign(0);
 }
 
 
@@ -194,7 +198,7 @@ void sha3::update(const std::vector<unsigned char>& data)
 		rest = std::vector<unsigned char>(all.end() - l, all.end());
 
 	for(auto p_i : p)
-		S = keccak(p_i);
+		keccak(p_i);
 }
 
 std::string sha3::final(const std::vector<unsigned char>& data)
@@ -213,7 +217,8 @@ std::string sha3::final(const std::vector<unsigned char>& data)
 	
 
 	std::vector<unsigned char> z;
-	std::vector<unsigned char> res = keccak(rest);
+	keccak(rest);
+	std::vector<unsigned char> res = convertStateArrayToString();
 
 	z.insert(z.end(), res.begin(), res.begin() + rate);
 
