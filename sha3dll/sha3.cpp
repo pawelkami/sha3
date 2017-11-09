@@ -136,7 +136,7 @@ void sha3::keccakJota(unsigned int round)
 
 void sha3::rnd(unsigned int round)
 {
-	LOG("Start " + std::string(round) + " round\n");
+	LOG("Start " + std::to_string(round) + " round\n");
 	keccakTheta();
 	keccakRho();
 	keccakPi();
@@ -177,7 +177,7 @@ sha3::sha3()
 
 sha3::sha3(int size)
 {
-	LOG("Init sha3-" + std::string(size) + " algorithm\n");
+	LOG("Init sha3-" + std::to_string(size) + " algorithm\n");
 	d = size;
 	c = 2 * size;
 	r = B - c; // r = b - c
