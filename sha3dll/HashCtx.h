@@ -5,6 +5,9 @@
 #include <memory>
 #include <vector>
 
+/**
+ * Klasa odpowiedzialna za definicje odpowiedniego wariantu funkcji skrotu oraz odpowiednie skorelowanie danych i obliczen funkcji skrotu
+ */
 class HashCtx
 {
 private:
@@ -24,7 +27,16 @@ public:
 
 	void clean();
 
+	/**
+	* Funkcja definiuje odpowiednia wersje funkcji skrotu
+	* @param wersja funkcji
+	*/
 	void setHashAlgo(HashType hashType);
+	/**
+	* Funkcja pobiera dane z podanego pliku i wywoluje dla nich odpowiednie funkcje algorytmu skrotu
+	* @param sciezka do pliku
+	* @return wartosc funkcji skrotut
+	*/
 	std::string computeHash(const std::string& filepath);
 	
 };

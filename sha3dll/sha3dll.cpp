@@ -7,6 +7,9 @@
 #include <vector>
 #include "HashCtx.h"
 
+/**
+* Modul odpowiedzialny za stworzenie api biblioteki pythonowej oraz zdefiniowanej jej funkcji
+*/
 BOOST_PYTHON_MODULE(sha3dll)
 {
 	using namespace boost::python;

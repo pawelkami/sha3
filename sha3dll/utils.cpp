@@ -4,6 +4,7 @@
 #include <algorithm>
 #include <map>
 #include <fstream>
+#include <iostream>
 #include <memory>
 
 std::string bin2hex(const std::vector<unsigned char>& bin)
@@ -63,9 +64,10 @@ std::vector<unsigned char> readFile(const std::string & filepath)
 	return fileContents;
 }
 
-
 std::vector<unsigned char> readFile(const std::string& filepath, unsigned from, unsigned bytesToRead)
 {
+	std::cout << "Reading " << bytesToRead << " bytes from " << filepath << "\n";
+
 	std::ifstream stream(filepath, std::ios::binary);
 	if (!stream)
 		throw std::runtime_error("Problem reading file " + filepath);
@@ -83,6 +85,7 @@ long getFileSize(const std::string& filename)
 	int rc = stat(filename.c_str(), &stat_buf);
 	return rc == 0 ? stat_buf.st_size : -1;
 }
+
 bool doFileExist(const std::string & filepath)
 {
 	std::ifstream f(filepath);
