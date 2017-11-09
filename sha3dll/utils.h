@@ -4,8 +4,16 @@
 #include <string>
 #include <vector>
 #include <fstream>
+#include <iostream>
 
 #define HEX2DIGIT(c) ((c) <= '9' ? (c) & 0xF : ((c) - 'a' + 10) & 0xF)
+
+#ifdef LOG_OPERATIONS
+#define LOG(txt) {std::cout << txt << std::endl;}
+
+#else
+#define LOG(txt)
+#endif
 
 /**
 * Funkcja konwertuje lancuch znakow do lancucha heksadecymalnego

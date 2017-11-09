@@ -15,10 +15,10 @@ const uint8_t sha3::rho_offset[NUMBER_OF_ROUNDS] = {
 };
 
 const uint8_t sha3::pi_positions[NUMBER_OF_ROUNDS] = {
-	6, 12, 18, 24, 3, 9, 
-	10, 16, 22, 1, 7, 13, 
-	19, 20, 4, 5, 11, 17, 
-	23, 2, 8, 14, 15, 21 
+	6, 12, 18, 24, 3, 9,
+	10, 16, 22, 1, 7, 13,
+	19, 20, 4, 5, 11, 17,
+	23, 2, 8, 14, 15, 21
 };
 
 uint64_t sha3::rotl64(uint64_t n, int c)
@@ -66,20 +66,20 @@ std::vector<unsigned char> sha3::convertStateArrayToString()
 }
 
 void sha3::keccakPermutation()
-{	
-	std::cout << "Start keccak permutation\n";
+{
+	LOG("Start keccak permutation\n");
 	for (int i = 0; i < NUMBER_OF_ROUNDS; ++i)
 		rnd(i);
 }
 
 void sha3::keccakTheta()
 {
-	std::cout << "Computing Theta\n";
+	LOG("Computing Theta\n");
 	uint64_t C[X], D[X];
 
 	for (int x = 0; x < X; x++)
 		C[x] = A[x] ^ A[x + 5] ^ A[x + 10] ^ A[x + 15] ^ A[x + 20];
-	
+
 	D[0] = rotl64(C[1], 1) ^ C[4];
 	D[1] = rotl64(C[2], 1) ^ C[0];
 	D[2] = rotl64(C[3], 1) ^ C[1];
@@ -98,14 +98,14 @@ void sha3::keccakTheta()
 
 void sha3::keccakRho()
 {
-	std::cout << "Computing Rho\n";
+	LOG("Computing Rho\n");
 	for (int i = 1; i < X*Y; ++i)
 		A[i] = rotl64(A[i], rho_offset[i-1]);
 }
 
 void sha3::keccakPi()
 {
-	std::cout << "Computing Pi\n";
+	LOG("Computing Pi\n");
 	state_array A_prim = A;
 
 	for (int i = 1; i < X*Y; ++i)
@@ -116,7 +116,7 @@ void sha3::keccakPi()
 
 void sha3::keccakChi()
 {
-	std::cout << "Computing Chi\n";
+	LOG("Computing Chi\n");
 	for (int i = 0; i < X*Y; i += 5) {
 		uint64_t A0 = A[0 + i], A1 = A[1 + i];
 		A[0 + i] ^= ~A1 & A[2 + i];
@@ -129,12 +129,14 @@ void sha3::keccakChi()
 
 void sha3::keccakJota(unsigned int round)
 {
+	LOG(std::string("Iota round: ") + std::to_string(round));
+
 	A[0] ^= keccak_round_constants[round];
 }
 
 void sha3::rnd(unsigned int round)
 {
-	std::cout << "Start " << round << " round\n";
+	LOG("Start " + std::string(round) + " round\n");
 	keccakTheta();
 	keccakRho();
 	keccakPi();
@@ -144,6 +146,7 @@ void sha3::rnd(unsigned int round)
 
 void sha3::sponge(const std::vector<unsigned char>& m)
 {
+	LOG("Sponge");
 	int i = 0, j = 0;
 	for (; i < m.size(); i += 8)
 	{
@@ -174,9 +177,9 @@ sha3::sha3()
 
 sha3::sha3(int size)
 {
-	std::cout << "Init sha3-" << size << " algorithm\n";
+	LOG("Init sha3-" + std::string(size) + " algorithm\n");
 	d = size;
-	c = 2 * size; 
+	c = 2 * size;
 	r = B - c; // r = b - c
 	rate = r >> 3;
 
@@ -191,15 +194,16 @@ sha3::~sha3()
 
 void sha3::update(const std::vector<unsigned char>& data)
 {
+	LOG("SHA3 update");
 	std::vector<std::vector<unsigned char> > p;
 	std::vector<unsigned char> all = rest;
-	
+
 	all.insert(all.end(), data.begin(), data.end());
 
 	int i = 0;
 	for (; i < all.size() / rate; ++i)
 		p.push_back(std::vector<unsigned char>(all.begin() + i * rate, all.begin() + (i+1) * rate));
-	
+
 	int l = all.size() % rate;
 	if (l)
 		rest = std::vector<unsigned char>(all.end() - l, all.end());
@@ -210,6 +214,7 @@ void sha3::update(const std::vector<unsigned char>& data)
 
 std::string sha3::final(const std::vector<unsigned char>& data)
 {
+	LOG("SHA3 final");
 	do
 	{
 		update(data);
@@ -221,7 +226,7 @@ std::string sha3::final(const std::vector<unsigned char>& data)
 		rest.push_back(0);
 
 	rest[rate - 1] |= 0x80;
-	
+
 
 	std::vector<unsigned char> z;
 	keccak(rest);

@@ -50,7 +50,11 @@ std::string HashCtx::computeHash(const std::string& filepath)
 			data = readFile(filepath, i * MAX_BUF_FILESIZE, MAX_BUF_FILESIZE);
 		}
 
-		return strategy->final(data);
+		std::string result = strategy->final(data);
+		
+		LOG("Computed digest of " + filepath + " is " + result);
+
+		return result;
 	}
 	else
 		throw std::runtime_error("Hash algorithm wasn't chosen");
