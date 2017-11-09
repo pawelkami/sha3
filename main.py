@@ -2,6 +2,112 @@ import Tkinter as tk
 import tkFileDialog
 from functools import partial
 import sha3dll
+import ctypes
+import os
+import sys
+import threading
+import wx
+import thread
+import threading
+import time
+
+
+class OutputGrabber(object):
+    """
+    Class used to grab standard output or another stream.
+    """
+    escape_char = "\b"
+
+    def __init__(self, stream=None, threaded=False):
+        self.origstream = stream
+        self.threaded = threaded
+        if self.origstream is None:
+            self.origstream = sys.stdout
+        self.origstreamfd = self.origstream.fileno()
+        self.capturedtext = ""
+        # Create a pipe so the stream can be captured:
+        self.pipe_out, self.pipe_in = os.pipe()
+
+    def __enter__(self):
+        self.start()
+        return self
+
+    def __exit__(self, type, value, traceback):
+        self.stop()
+
+    def start(self, panel):
+        """
+        Start capturing the stream data.
+        """
+        # Save a copy of the stream:
+        self.streamfd = os.dup(self.origstreamfd)
+        # Replace the original stream with our write pipe:
+        os.dup2(self.pipe_in, self.origstreamfd)
+        if self.threaded:
+            # Start thread that will read the stream:
+            self.workerThread = threading.Thread(target=self.readOutput, args=(panel, ))
+            self.workerThread.setDaemon(True)
+            self.workerThread.start()
+            # Make sure that the thread is running and os.read() has executed:
+            time.sleep(0.01)
+
+    def stop(self):
+        """
+        Stop capturing the stream data and save the text in `capturedtext`.
+        """
+        # Print the escape character to make the readOutput method stop:
+        self.origstream.write(self.escape_char)
+        # Flush the stream to make sure all our data goes in before
+        # the escape character:
+        self.origstream.flush()
+        if self.threaded:
+            # wait until the thread finishes so we are sure that
+            # we have until the last character:
+            self.workerThread.join()
+        # else:
+        #     self.readOutput()
+        # Close the pipe:
+        os.close(self.pipe_out)
+        # Restore the original stream:
+        os.dup2(self.streamfd, self.origstreamfd)
+
+    def readOutput(self, panel):
+        """
+        Read the stream data (one byte at a time)
+        and save the text in `capturedtext`.
+        """
+        panel.append_txt("Log starts\n")
+        while True:
+            char = os.read(self.pipe_out, 1)
+            if not char or self.escape_char in char:
+                break
+            panel.append_txt(char)
+
+class ExamplePanel(wx.Panel):
+    def __init__(self, parent):
+        wx.Panel.__init__(self, parent)
+        self.quote = wx.StaticText(self, label="SHA3 Log :", pos=(10, 10))
+
+        self.logger = wx.TextCtrl(self, pos=(0,40), size=(300,150), style=wx.TE_MULTILINE | wx.TE_READONLY)
+
+    def append_txt(self,txt):
+        self.logger.AppendText(txt)
+
+    def onClose(self, event):
+        self.close()
+
+
+def sample_Window():
+    try:
+        app = wx.App(False)
+        frame = wx.Frame(None)
+        panel = ExamplePanel(frame)
+        frame.Show()
+        out = OutputGrabber(sys.stdout, True)
+        out.start(panel)
+        app.MainLoop()
+    except:
+	    out.stop()
 
 '''
 Class liable to draw window with possibility to specify file to hash
@@ -108,16 +214,18 @@ class UI(tk.Frame):
     Method is liable to start appropriate algorithm SHA3 version
     '''
     def compute(self):
-        # print(self.file.get())
-        # print(self.sha_opt.get())
         hashType = sha3dll.HashType(self.sha_opt.get())
-		
+
         hashCtx = sha3dll.HashCtx()
-        hashCtx.setHashAlgo(hashType)		
+        hashCtx.setHashAlgo(hashType)
         hash = hashCtx.computeHash(str(self.file.get()))
         self.printResult(hash)
 
+
 if __name__ == "__main__":
+    t = threading.Thread(target=sample_Window)
+    t.start()
+
     root = tk.Tk()
     root.wm_title('SHA3 Algorithm')
     ws = root.winfo_screenwidth()
@@ -127,3 +235,5 @@ if __name__ == "__main__":
     root.geometry("%dx%d+%d+%d" % (w, h, ws / 2 - w / 2, hs / 2 - h / 2))
     UI(root, ).pack(fill="both", expand=True)
     root.mainloop()
+
+    t.join()
