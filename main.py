@@ -116,8 +116,8 @@ class UI(tk.Frame):
         self.path = tk.Entry(self, textvariable=self.file, width=40)
         self.path.config(state='readonly')
 
-        self.exploreBtn = tk.Button(self, text="Select file", command=self.pickFile)
-        self.computeBtn = tk.Button(self, text="Compute digest", command=self.compute)
+        self.exploreBtn = tk.Button(self, text="Select file", width=12, command=self.pickFile)
+        self.computeBtn = tk.Button(self, text="Compute digest", width=12, command=self.compute)
 
         self.sha224Btn = tk.Radiobutton(self, text="224 bit", variable=self.sha_opt, value=sha3dll.HashType.SHA3_224)
         self.sha256Btn = tk.Radiobutton(self, text="256 bit", variable=self.sha_opt, value=sha3dll.HashType.SHA3_256)
@@ -168,15 +168,12 @@ class UI(tk.Frame):
     '''
     def printResult(self, hash):
         dialog = tk.Toplevel()
-        ws = root.winfo_screenwidth()
-        hs = root.winfo_screenheight()
-        w = 280
-        h = 130
-        dialog.geometry("%dx%d+%d+%d" % (w, h, ws / 2 - w / 2, hs / 2 - h / 2))
         dialog.title('Result')
-        toDisplay = str(hash)
-        msg = tk.Message(dialog, text=toDisplay, width=220)
-        msg.pack()
+        txt = tk.Text(dialog, height=4, width=45)
+        txt.pack()
+        txt.insert(tk.END, hash)
+        txt.config(state="disabled")
+        dialog.resizable(width=False, height=False)
         tk.Label(dialog, text="").pack()
         button = tk.Button(dialog, text="  OK  ", command=dialog.destroy)
         button.pack()
