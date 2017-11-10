@@ -67,14 +67,14 @@ std::vector<unsigned char> sha3::convertStateArrayToString()
 
 void sha3::keccakPermutation()
 {
-	LOG("Start keccak permutation\n");
+	LOG("Start keccak permutation");
 	for (int i = 0; i < NUMBER_OF_ROUNDS; ++i)
 		rnd(i);
 }
 
 void sha3::keccakTheta()
 {
-	LOG("Computing Theta\n");
+	LOG("Computing Theta");
 	uint64_t C[X], D[X];
 
 	for (int x = 0; x < X; x++)
@@ -98,14 +98,14 @@ void sha3::keccakTheta()
 
 void sha3::keccakRho()
 {
-	LOG("Computing Rho\n");
+	LOG("Computing Rho");
 	for (int i = 1; i < X*Y; ++i)
 		A[i] = rotl64(A[i], rho_offset[i-1]);
 }
 
 void sha3::keccakPi()
 {
-	LOG("Computing Pi\n");
+	LOG("Computing Pi");
 	state_array A_prim = A;
 
 	for (int i = 1; i < X*Y; ++i)
@@ -116,7 +116,7 @@ void sha3::keccakPi()
 
 void sha3::keccakChi()
 {
-	LOG("Computing Chi\n");
+	LOG("Computing Chi");
 	for (int i = 0; i < X*Y; i += 5) {
 		uint64_t A0 = A[0 + i], A1 = A[1 + i];
 		A[0 + i] ^= ~A1 & A[2 + i];
@@ -136,7 +136,7 @@ void sha3::keccakJota(unsigned int round)
 
 void sha3::rnd(unsigned int round)
 {
-	LOG("Start " + std::to_string(round) + " round\n");
+	LOG("Start " + std::to_string(round) + " round");
 	keccakTheta();
 	keccakRho();
 	keccakPi();
@@ -177,7 +177,7 @@ sha3::sha3()
 
 sha3::sha3(int size)
 {
-	LOG("Init sha3-" + std::to_string(size) + " algorithm\n");
+	LOG("Init sha3-" + std::to_string(size) + " algorithm");
 	d = size;
 	c = 2 * size;
 	r = B - c; // r = b - c
