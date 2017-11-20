@@ -185,6 +185,7 @@ sha3::sha3(int size)
 
 	S.assign(B, 0);
 	A.assign(0);
+	LOG("Rate is " + std::to_string(rate) + " bytes");
 }
 
 
